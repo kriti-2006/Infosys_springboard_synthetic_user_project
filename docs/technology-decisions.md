@@ -1,0 +1,14 @@
+# Technology decisions
+
+| Area | Choice | Why it fits | Alternatives - when better / why not now |
+|---|---|---|---|
+| Language/runtime | **Python (existing)** + FastAPI | Entire Milestone 2 is Python; FastAPI gives async I/O, OpenAPI docs and Pydantic validation for free. | *Node/TypeScript + Prisma*: better if the team were JS-only or sharing types with a JS front end; rewriting working agents would not be an extension. *Flask/Django*: no native async / heavier. |
+| Database | **PostgreSQL 16** | Transactions, FKs, unique constraints for idempotency, JSONB, pgvector - one engine. | *MongoDB*: good for schemaless docs, but we need relational integrity + constraints. *MySQL*: fine relationally but weaker JSON/vector story. *SQLite*: used only for quick tests (no real concurrency, no pgvector). |
+| ORM / migrations | **SQLAlchemy 2.0 async + Alembic** | Mature Python ORM, parameterised queries, versioned migrations, async driver. | *Prisma*: the prompt's pick, but Node-only. *SQLModel*: thinner, less mature migrations. *Django ORM*: ties us to Django. *Raw SQL*: more code, more injection risk. |
+| Vector search | **pgvector (optional)** | Same DB, same transaction, trivial ops; data volume is small. | *Pinecone/Weaviate/Qdrant*: better at 10M+ vectors, hybrid search or multi-tenant scale; extra service + sync problem not justified yet. |
+| LLM | **OpenRouter (existing)**, model via env | Already integrated with retry/fallback; one key reaches many models, incl. OpenAI-compatible ones. | *OpenAI direct*: simpler billing/latency if one model is fixed. *Anthropic / Gemini*: swap by changing `llm.py` only. *Local models*: needed for strict data-residency; lower quality/throughput. The prompt asked for "GPT-5.6"; I could not verify that identifier, so the model is simply `OPENROUTER_MODEL`. |
+| Structured output | **Pydantic v2** + LangChain `with_structured_output` | Already used everywhere; same models validate API input and LLM output before any DB write. | *Zod*: JS equivalent. *Joi/Yup*: weaker typing, JS-only. |
+| Concurrency / jobs | **asyncio tasks + semaphores**, DB-backed status | Survey is idempotent/resumable; progress lives in Postgres; zero extra infra. | *BullMQ+Redis / Celery / RabbitMQ / Kafka*: needed if jobs must survive a server restart, run on separate workers, or be scheduled across machines. Limitation today: an in-flight job dies with the process; a startup sweeper marks it `partial` so it can be resumed. |
+| Rate limiting | In-memory sliding window | Single instance. | Redis-backed limiter (e.g. slowapi + Redis) behind multiple instances. |
+| File text extraction | pypdf, python-docx, csv/txt | Pure Python, no system deps. | *Apache Tika / Unstructured*: better layout/OCR/XLSX support, heavy. XLSX/OCR intentionally not implemented. |
+| Logging | stdlib `logging` -> JSON with secret redaction | No dependency, machine-readable. | *structlog / OpenTelemetry*: richer tracing once deployed. |

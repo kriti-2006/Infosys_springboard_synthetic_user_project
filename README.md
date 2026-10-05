@@ -99,3 +99,13 @@ This will:
   plain Python functions/classes — drop them behind FastAPI endpoints as-is.
 - **Resume a run**: `graph.get_run_history(thread_id)` reads back a
   previously checkpointed `GraphState` for that thread.
+
+
+---
+
+# Milestone 3 (backend: database, surveys, interviews, insights, scoring)
+
+**Database: PostgreSQL 16 + pgvector** (SQLAlchemy async + Alembic). Start it with `docker compose up -d`.
+See `docs/milestone-3.md` (quick start + API), `docs/database.md`, `docs/agents.md`, `docs/architecture.md`,
+`docs/technology-decisions.md`, `docs/environment.md`, `docs/milestone-2-analysis.md`.
+The Milestone 2 pipeline (`python main.py`, `streamlit run streamlit_app.py`) is unchanged.
