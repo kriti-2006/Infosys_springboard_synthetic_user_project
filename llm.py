@@ -138,3 +138,85 @@ def invoke_chat(prompt, inputs, temperature: float = 0.7, label: str = "llm_call
         return prompt | _build_llm(model, temperature)
 
     return _invoke_with_fallback(build_chain, inputs, temperature, label)
+
+
+# =====================================================================
+# Milestone 3 additions: async calls, timeouts, global concurrency cap,
+# typed errors, embeddings. Milestone-2 sync functions above are untouched.
+# =====================================================================
+import asyncio
+
+from config import settings
+
+
+class LLMError(RuntimeError):
+    """Controlled LLM failure. kind: timeout | rate_limit | invalid_output | unavailable."""
+
+    def __init__(self, message: str, kind: str = "unavailable"):
+        super().__init__(message)
+        self.kind = kind
+
+
+_semaphores: dict = {}
+
+
+def _llm_semaphore() -> asyncio.Semaphore:
+    """One cap on in-flight LLM calls per event loop (controlled concurrency, never unlimited)."""
+    loop = asyncio.get_running_loop()
+    sem = _semaphores.get(loop)
+    if sem is None:
+        sem = _semaphores[loop] = asyncio.Semaphore(settings.LLM_MAX_CONCURRENCY)
+    return sem
+
+
+def _classify(exc: Exception) -> str:
+    if isinstance(exc, (asyncio.TimeoutError, TimeoutError)):
+        return "timeout"
+    text = str(exc).lower()
+    if "429" in text or "rate limit" in text or "rate_limit" in text:
+        return "rate_limit"
+    if "validation" in text or "no structured output" in text or "parse" in text:
+        return "invalid_output"
+    return "unavailable"
+
+
+async def _ainvoke_with_fallback(build_chain, inputs, temperature: float, label: str):
+    last_exc: Exception | None = None
+    kind = "unavailable"
+    for model in FALLBACK_MODELS:
+        chain = build_chain(model, temperature)
+        for attempt in range(1, RETRIES_PER_MODEL + 1):
+            try:
+                async with _llm_semaphore():
+                    result = await asyncio.wait_for(chain.ainvoke(inputs), timeout=settings.LLM_TIMEOUT_SECONDS)
+                if result is None:
+                    raise ValueError("model returned no structured output")
+                return result
+            except Exception as e:  # noqa: BLE001
+                last_exc, kind = e, _classify(e)
+                log_.warning("%s: model=%s attempt=%d/%d failed (%s): %s", label, model, attempt, RETRIES_PER_MODEL, kind, e)
+                if attempt < RETRIES_PER_MODEL:
+                    await asyncio.sleep(RETRY_BACKOFF_SECONDS * attempt * (3 if kind == "rate_limit" else 1))
+    raise LLMError(f"{label}: all candidate models failed ({', '.join(FALLBACK_MODELS)})", kind) from last_exc
+
+
+async def ainvoke_structured(prompt, schema, inputs, temperature: float = 0.7, label: str = "llm_call"):
+    """Async twin of invoke_structured(): returns a validated Pydantic `schema` instance or raises LLMError."""
+    def build_chain(model, temperature):
+        return prompt | _build_llm(model, temperature).with_structured_output(schema, method="function_calling")
+
+    return await _ainvoke_with_fallback(build_chain, inputs, temperature, label)
+
+
+async def aembed(texts: list[str]) -> list[list[float]] | None:
+    """Embeddings via OpenRouter. Returns None when EMBEDDING_MODEL is unset (semantic memory disabled)."""
+    if not settings.EMBEDDING_MODEL or not texts:
+        return None
+    from langchain_openai import OpenAIEmbeddings
+    emb = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL, api_key=_api_key(), base_url="https://openrouter.ai/api/v1",
+                           check_embedding_ctx_length=False)
+    try:
+        return await asyncio.wait_for(emb.aembed_documents(texts), timeout=settings.LLM_TIMEOUT_SECONDS)
+    except Exception as e:  # noqa: BLE001 - embeddings are an optimisation; callers fall back to lexical retrieval
+        log_.warning("embedding call failed, falling back to lexical retrieval: %s", e)
+        return None
