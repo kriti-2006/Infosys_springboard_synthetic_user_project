@@ -23,37 +23,23 @@ load_dotenv()
 
 log_ = logging.getLogger(__name__)
 
-# Ordered list of models to try, first to last. OPENROUTER_MODEL (if set)
-# is tried first; the rest are fallbacks. Duplicates are removed but order
-# is preserved.
-#
-# Pinned free slugs (nex-agi/nex-n2-pro:free, openai/gpt-oss-*:free, etc.)
-# get deprecated/repriced without warning and then 404 forever -- dead
-# weight that just burns retries before ever reaching a working model.
-# "openrouter/free" is the one entry that actually stays current: it's a
-# router that dynamically picks a currently-live free model filtered for
-# the capability the request needs (tool calling), so it self-heals as
-# OpenRouter's free catalog changes. Keep the fallback list to just that.
-_env_model = os.getenv("OPENROUTER_MODEL")
-FALLBACK_MODELS = list(dict.fromkeys(filter(None, [
-    _env_model,
-    "openrouter/free",
-])))
+HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen3-8B")
 
-DEFAULT_MODEL = FALLBACK_MODELS[0]
+FALLBACK_MODELS = [HF_MODEL]
+
+DEFAULT_MODEL = HF_MODEL
 
 RETRIES_PER_MODEL = 2
 RETRY_BACKOFF_SECONDS = 1.5
 
 
 def _api_key() -> str:
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = os.getenv("HF_TOKEN")
     if not api_key:
         raise RuntimeError(
-            "OPENROUTER_API_KEY is not set. Check your .env file."
+            "HF_TOKEN is not set. Check your .env file."
         )
     return api_key
-
 
 def _build_llm(model: str, temperature: float) -> ChatOpenAI:
     return ChatOpenAI(
@@ -61,11 +47,7 @@ def _build_llm(model: str, temperature: float) -> ChatOpenAI:
         temperature=temperature,
         max_tokens=4096,
         api_key=_api_key(),
-        base_url="https://openrouter.ai/api/v1",
-        default_headers={
-            "HTTP-Referer": "http://localhost",
-            "X-Title": "Synthetic Persona Platform",
-        },
+        base_url="https://router.huggingface.co/v1",   # pehle openrouter.ai tha
     )
 
 
@@ -122,7 +104,7 @@ def invoke_structured(prompt, schema, inputs, temperature: float = 0.7, label: s
     """
     def build_chain(model, temperature):
         structured_llm = _build_llm(model, temperature).with_structured_output(
-            schema, method="function_calling"
+            schema, method="json_schema"
         )
         return prompt | structured_llm
 
