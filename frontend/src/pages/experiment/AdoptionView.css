@@ -1,0 +1,91 @@
+.adoption-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.adoption-overview-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+  margin-bottom: 10px;
+}
+
+.adoption-overview-footnote {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.adoption-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.adoption-persona-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adoption-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.adoption-row-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.adoption-row-name {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.adoption-row-meter {
+  flex: 1;
+  max-width: 320px;
+}
+
+.adoption-row-detail {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.adoption-row-detail p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.adoption-factor-list {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adoption-factor-positive {
+  color: var(--sentiment-positive);
+}
+
+.adoption-factor-negative {
+  color: var(--sentiment-negative);
+}
+
+.adoption-row-confidence {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}

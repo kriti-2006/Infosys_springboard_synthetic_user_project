@@ -1,0 +1,18 @@
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.scenario-card-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 10px 0 6px;
+}
+
+.scenario-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}

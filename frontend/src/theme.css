@@ -1,0 +1,82 @@
+:root {
+  --surface-navy-950: #0b0d14;
+  --surface-navy-900: #11141f;
+  --surface-navy-800: #1a1e2c;
+  --surface-navy-700: #252a3b;
+  --surface-navy-600: #343b52;
+
+  --bg-warm: #f8f6f1;
+  --bg-warm-raised: #ffffff;
+  --bg-warm-sunken: #f1eee6;
+
+  --border-soft: #e7e2d6;
+  --border-navy: #2a3042;
+
+  --text-primary: #1c1b17;
+  --text-secondary: #635f55;
+  --text-muted: #948f82;
+  --text-on-navy: #e9e7f3;
+  --text-on-navy-muted: #9a9bb5;
+
+  --accent-violet: #6c4df0;
+  --accent-violet-strong: #5934e0;
+  --accent-violet-soft: #ece6fd;
+  --accent-violet-100: #f3effe;
+
+  /* Validated against scripts/validate_palette.js (dataviz skill): rendering order
+     positive -> mixed -> neutral -> negative keeps red/green non-adjacent (CVD-safe). */
+  --sentiment-positive: #0ca30c;
+  --sentiment-positive-bg: #e2f5e2;
+  --sentiment-negative: #d03b3b;
+  --sentiment-negative-bg: #fbe7e7;
+  --sentiment-neutral: #6b6f76;
+  --sentiment-neutral-bg: #eceef0;
+  --sentiment-mixed: #6250d6;
+  --sentiment-mixed-bg: #ece8fb;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-sm: 0 1px 2px rgba(20, 16, 10, 0.06);
+  --shadow-md: 0 4px 16px rgba(20, 16, 10, 0.08);
+  --shadow-lg: 0 12px 32px rgba(20, 16, 10, 0.12);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-warm: #0e0f13;
+    --bg-warm-raised: #15161d;
+    --bg-warm-sunken: #0a0b0e;
+    --border-soft: #272832;
+    --text-primary: #ece9e2;
+    --text-secondary: #a8a49a;
+    --text-muted: #6f6c64;
+    --accent-violet-soft: #241c47;
+    --accent-violet-100: #1c1836;
+    --sentiment-mixed: #9085e9;
+    --sentiment-mixed-bg: #262244;
+    --sentiment-positive-bg: #163a1c;
+    --sentiment-negative-bg: #3d1e1e;
+    --sentiment-neutral-bg: #2a2c31;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-warm: #0e0f13;
+  --bg-warm-raised: #15161d;
+  --bg-warm-sunken: #0a0b0e;
+  --border-soft: #272832;
+  --text-primary: #ece9e2;
+  --text-secondary: #a8a49a;
+  --text-muted: #6f6c64;
+  --accent-violet-soft: #241c47;
+  --accent-violet-100: #1c1836;
+  --sentiment-mixed: #9085e9;
+  --sentiment-mixed-bg: #262244;
+  --sentiment-positive-bg: #163a1c;
+  --sentiment-negative-bg: #3d1e1e;
+  --sentiment-neutral-bg: #2a2c31;
+}

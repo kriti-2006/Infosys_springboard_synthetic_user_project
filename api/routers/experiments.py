@@ -2,11 +2,11 @@ import asyncio
 import uuid
 
 from fastapi import APIRouter, Depends, File, UploadFile
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import serializers as ser
-from db.models import Experiment, ExperimentDocument, Persona
+from db.models import Experiment, ExperimentDocument, Persona, Survey
 from db.session import get_session
 from schemas import Persona as PersonaSchema
 from schemas_m3 import ExperimentCreate, PersonaGenerateRequest
@@ -38,6 +38,20 @@ async def create_experiment(body: ExperimentCreate, s: AsyncSession = Depends(ge
     s.add(e)
     await s.commit()
     return ser.experiment(e)
+
+
+@router.get("")
+async def list_experiments(s: AsyncSession = Depends(get_session)):
+    rows = (await s.scalars(select(Experiment).order_by(Experiment.created_at.desc()))).all()
+    if not rows:
+        return []
+    ids = [e.id for e in rows]
+    persona_counts = dict((await s.execute(select(Persona.experiment_id, func.count())
+                                           .where(Persona.experiment_id.in_(ids)).group_by(Persona.experiment_id))).all())
+    survey_counts = dict((await s.execute(select(Survey.experiment_id, func.count())
+                                          .where(Survey.experiment_id.in_(ids)).group_by(Survey.experiment_id))).all())
+    return [{**ser.experiment(e), "personaCount": persona_counts.get(e.id, 0), "surveyCount": survey_counts.get(e.id, 0)}
+            for e in rows]
 
 
 @router.get("/{experiment_id}")

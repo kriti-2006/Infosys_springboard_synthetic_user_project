@@ -1,0 +1,84 @@
+.survey-detail-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.survey-detail-meta {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.survey-detail-objective {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+}
+
+.survey-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-warm-sunken);
+  overflow: hidden;
+}
+
+.survey-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-violet), #9b7bff);
+  transition: width 0.4s ease;
+}
+
+.survey-progress-label {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.survey-progress-failed {
+  color: var(--sentiment-negative);
+}
+
+.survey-progress-live {
+  color: var(--accent-violet-strong);
+}
+
+.survey-detail-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.survey-detail-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.survey-detail-question {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-warm-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  font-size: 13.5px;
+}
+
+.survey-detail-question-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-violet-strong);
+  background: var(--accent-violet-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+  height: fit-content;
+  flex-shrink: 0;
+}
+
+.survey-detail-question-type {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  text-transform: capitalize;
+}

@@ -27,6 +27,7 @@ class Settings:
     MAX_RESPONSE_ATTEMPTS = _int("MAX_RESPONSE_ATTEMPTS", 2)
     MEMORY_TOP_K = _int("MEMORY_TOP_K", 6)
     INTERVIEW_WINDOW_TURNS = _int("INTERVIEW_WINDOW_TURNS", 4)
+    CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
     API_KEY = os.getenv("API_KEY", "").strip()
     RATE_LIMIT_PER_MINUTE = _int("RATE_LIMIT_PER_MINUTE", 120)
     UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")

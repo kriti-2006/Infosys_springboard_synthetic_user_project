@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +11,15 @@ from services.errors import InvalidInput, NotFound
 from workers import survey_worker
 
 router = APIRouter(prefix="/surveys", tags=["surveys"])
+
+
+@router.get("")
+async def list_surveys(experiment_id: str = Query(alias="experimentId"), s: AsyncSession = Depends(get_session)):
+    if not await s.get(Experiment, experiment_id):
+        raise NotFound("experiment not found")
+    ids = (await s.scalars(select(Survey.id).where(Survey.experiment_id == experiment_id)
+                           .order_by(Survey.created_at.desc()))).all()
+    return [await _detail(s, sid) for sid in ids]
 
 
 @router.post("", status_code=201)

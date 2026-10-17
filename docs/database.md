@@ -12,7 +12,7 @@ alembic upgrade head            # creates all tables
 Option 2 - native install: install PostgreSQL 16 + pgvector (Ubuntu: `sudo apt install postgresql postgresql-16-pgvector`; Windows/macOS: official PostgreSQL
 installer or Homebrew + `brew install pgvector`), then run `scripts/setup_db_local.sh` (or run its SQL by hand), then `alembic upgrade head`.
 
-Run tests against Postgres: `TEST_DATABASE_URL=postgresql://persona:persona@localhost:5432/persona_platform_test pytest`
+Run tests against Postgres: `TEST_DATABASE_URL=postgresql://persona:persona@localhost:5433/persona_platform_test pytest`
 (without it, tests use a temp SQLite file and the pgvector test is skipped).
 
 ## Why PostgreSQL
@@ -22,7 +22,7 @@ Relational data with real foreign keys, unique constraints (idempotency), transa
 Project is Python. SQLAlchemy parameterises all queries (SQL-injection safe); Alembic gives versioned migrations (`alembic/versions/0001_*`). Async engine + connection pool (10 + 10 overflow).
 
 ## pgvector decision
-Used, **optionally**. `persona_memories.embedding` is a `vector(EMBEDDING_DIM)` column. If `EMBEDDING_MODEL` is set (an embedding model served via OpenRouter), new memories are embedded and
+Used, **optionally**. `persona_memories.embedding` is a `vector(EMBEDDING_DIM)` column. If `EMBEDDING_MODEL` is set (an embedding model served via Qwen3-8B), new memories are embedded and
 retrieval is `ORDER BY embedding <=> query LIMIT k` inside Postgres. If unset (default), retrieval falls back to lexical overlap + importance + recency, so the system works without an embedding provider.
 No separate vector DB: the data volume (hundreds-thousands of short memories per experiment) does not justify one.
 (Embedding retrieval is tested with deterministic fake vectors on real pgvector; it has not been exercised with a real embedding model.)

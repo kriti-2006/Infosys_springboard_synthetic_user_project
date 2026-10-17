@@ -1,0 +1,123 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface-navy-950);
+  color: var(--text-on-navy);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 22px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-navy);
+}
+
+.app-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-violet), #9b7bff);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.app-brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.app-brand-sub {
+  font-size: 11px;
+  color: var(--text-on-navy-muted);
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-on-navy-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.app-nav-link:hover {
+  background: var(--surface-navy-800);
+  color: var(--text-on-navy);
+}
+
+.app-nav-link-active {
+  background: var(--surface-navy-700);
+  color: #fff;
+}
+
+.app-nav-icon {
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  color: var(--accent-violet);
+  font-weight: 700;
+}
+
+.app-sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.app-sidebar-footer-badge {
+  font-size: 11px;
+  color: var(--text-on-navy-muted);
+  background: var(--surface-navy-800);
+  border: 1px solid var(--border-navy);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-warm);
+}
+
+.app-content-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 40px 60px;
+}
+
+@media (max-width: 900px) {
+  .app-sidebar {
+    display: none;
+  }
+  .app-content-inner {
+    padding: 24px 18px 48px;
+  }
+}

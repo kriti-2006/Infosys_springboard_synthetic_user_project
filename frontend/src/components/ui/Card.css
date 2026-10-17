@@ -1,0 +1,25 @@
+.card {
+  background: var(--bg-warm-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.card-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-interactive:hover {
+  border-color: var(--accent-violet);
+  box-shadow: var(--shadow-md);
+}

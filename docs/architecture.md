@@ -1,7 +1,7 @@
 # Milestone 3 architecture
 
 ```
-Client -> FastAPI (api/) -> Agent -> Memory (PostgreSQL+pgvector) -> LLM service (llm.py, OpenRouter) -> Pydantic validation -> PostgreSQL -> Insights -> Usage scores
+Client -> FastAPI (api/) -> Agent -> Memory (PostgreSQL+pgvector) -> LLM service (llm.py, Groq) -> Pydantic validation -> PostgreSQL -> Insights -> Usage scores
 ```
 
 ```
@@ -36,6 +36,18 @@ Client -> FastAPI (api/) -> Agent -> Memory (PostgreSQL+pgvector) -> LLM service
 ## Request flow: interview
 Persona profile + top-k retrieved memories + last `INTERVIEW_WINDOW_TURNS` turns + experiment context -> answer -> validate (one retry) -> store both messages
 (with `relevant_memory` and `validation`) -> write validated stances to memory. `client_message_id` makes retries safe.
+
+## Frontend
+`frontend/` is a React + TypeScript + Vite SPA that calls the FastAPI JSON API directly (no server-rendering,
+no separate BFF). Structure: `src/api/*` (typed `axios` clients + response types matching the serializers above),
+`src/components/ui/*` (design system: Button/Card/Badge/Field/Tabs/Toast/EmptyState/Skeleton), `src/components/charts/*`
+(SentimentBar, AdoptionMeter — see `docs/technology-decisions.md` for the chart-color methodology), `src/components/personas/PersonaCard.tsx`,
+and `src/pages/*` (Dashboard, sample-scenario gallery, and a nested `experiments/:id/*` layout with tabs for Overview/Surveys/Interviews/Insights/Adoption).
+In dev, `vite.config.ts` proxies `/api` to `http://localhost:8000`, so no CORS configuration is needed locally; the
+backend's `CORS_ORIGINS` setting (added alongside the frontend) covers calling the API directly in production.
+Sample scenarios (`services/scenarios.py`, `api/routers/scenarios.py`) are static metadata only — launching one creates
+a real `Experiment` row pre-filled with a product/audience/objective and a suggested survey draft; personas, survey
+answers and insights are still produced by the real agents, never fabricated.
 
 ## Design decisions
 * **Python, not Node/Prisma**: the existing repo is Python; rewriting every agent would not be "extending" it. Equivalents: SQLAlchemy+Alembic (Prisma), Pydantic (Zod).

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents import persistent_interview_agent as ia
-from db.models import Interview
+from db.models import Interview, Persona
 from db.session import get_session
 from schemas_m3 import InterviewCreate, InterviewMessageIn
 from services.errors import NotFound
@@ -10,8 +11,17 @@ from services.errors import NotFound
 router = APIRouter(prefix="/interviews", tags=["interviews"])
 
 
-def _iv(i: Interview) -> dict:
-    return {"id": i.id, "experimentId": i.experiment_id, "personaId": i.persona_id, "status": i.status, "createdAt": i.created_at.isoformat()}
+def _iv(i: Interview, persona_name: str | None = None) -> dict:
+    return {"id": i.id, "experimentId": i.experiment_id, "personaId": i.persona_id, "personaName": persona_name,
+            "status": i.status, "createdAt": i.created_at.isoformat()}
+
+
+@router.get("")
+async def list_interviews(experiment_id: str = Query(alias="experimentId"), s: AsyncSession = Depends(get_session)):
+    rows = (await s.execute(select(Interview, Persona.name).join(Persona, Persona.id == Interview.persona_id)
+                            .where(Interview.experiment_id == experiment_id)
+                            .order_by(Interview.created_at.desc()))).all()
+    return [_iv(i, name) for i, name in rows]
 
 
 @router.post("", status_code=201)

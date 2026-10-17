@@ -1,12 +1,14 @@
 # Environment variables (`.env.example`)
 
+## Backend (`.env`, read by `config.py` / `llm.py`)
+
 | Variable | Default | Meaning |
 |---|---|---|
-| `OPENROUTER_API_KEY` | - (required) | OpenRouter key. Never commit `.env`. |
-| `OPENROUTER_MODEL` | `openrouter/free` | Model tried first, then fallback (M2 behaviour). |
+| `GROQ_API_KEY` | - (required) | Groq API key (api.groq.com). Never commit `.env`. |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Model used for every LLM call (persona/survey/interview/insight/scoring). |
 | `LLM_TIMEOUT_SECONDS` | 90 | Per-call timeout (async path). |
 | `LLM_MAX_CONCURRENCY` | 5 | Max in-flight LLM calls across the whole process. |
-| `DATABASE_URL` | `postgresql://persona:persona@localhost:5432/persona_platform` | Postgres URL (auto-converted to asyncpg). |
+| `DATABASE_URL` | `postgresql://persona:persona@localhost:5433/persona_platform` | Postgres URL (auto-converted to asyncpg). Port 5433 by default so it doesn't collide with a native Postgres install on 5432 — change both this and `docker-compose.yml`'s port mapping together if you free up 5432. |
 | `TEST_DATABASE_URL` | temp SQLite | DB for tests; use the `persona_platform_test` Postgres DB to also test pgvector. |
 | `EMBEDDING_MODEL` | empty | Set to enable pgvector semantic retrieval. Empty = lexical retrieval. |
 | `EMBEDDING_DIM` | 1536 | Vector size; must match the model **and the migrated column** (changing it needs a migration). |
@@ -20,3 +22,11 @@
 | `UPLOAD_DIR` / `MAX_UPLOAD_MB` | `./uploads` / 10 | Upload storage and size cap. |
 | `MAX_DOC_CONTEXT_CHARS` | 4000 | Max uploaded-document text added to the LLM context. |
 | `LOG_LEVEL` | INFO | Logging level. |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated list of origins allowed to call `/api` directly (the Vite dev server proxies `/api` itself, so this mainly matters for a production frontend served from a different origin). |
+
+## Frontend (`frontend/.env`, read by Vite — see `frontend/.env.example`)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `VITE_API_BASE_URL` | `/api` (dev proxy) | Base URL the frontend calls. Leave unset in dev — `vite.config.ts` proxies `/api` to `http://localhost:8000`. Set to the deployed API's `/api` URL in production. |
+| `VITE_API_KEY` | empty | Sent as `X-API-Key` on every request; only needed if the backend's `API_KEY` is set. |

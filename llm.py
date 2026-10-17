@@ -1,16 +1,15 @@
 """
 Single place that builds LLM clients and invokes them.
 
-OpenRouter's free tier is unreliable in practice: specific model slugs get
-pulled/deprecated without warning ("No endpoints found"), some models leak
-internal safety-check tokens instead of real content, and some silently
-return near-empty output. Betting on any single slug -- pinned or the
-"openrouter/free" auto-router -- has repeatedly broken in different ways.
+Provider: Groq (OpenAI-compatible endpoint, fast inference, generous free tier).
+Previously Hugging Face Inference Providers / OpenRouter -- both require paid
+credits that weren't available, so this points at Groq instead. Swapping
+provider again only means changing _api_key()/_build_llm() below.
 
-So instead of picking one model and hoping, every LLM call here goes through
-invoke_structured()/invoke_chat(), which retries transient failures and, if a
-model keeps failing, automatically falls back to the next model in
-FALLBACK_MODELS. The whole pipeline only fails if every candidate model fails.
+Every LLM call here goes through invoke_structured()/invoke_chat(), which
+retries transient failures and, if a model keeps failing, automatically falls
+back to the next model in FALLBACK_MODELS. The whole pipeline only fails if
+every candidate model fails.
 """
 import os
 import time
@@ -23,21 +22,23 @@ load_dotenv()
 
 log_ = logging.getLogger(__name__)
 
-HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen3-8B")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
-FALLBACK_MODELS = [HF_MODEL]
+# Models confirmed (via GET /v1/models on this account) to support tool calling + structured
+# outputs. GROQ_MODEL is tried first; these are extra fallbacks if it's ever deprecated/unavailable.
+FALLBACK_MODELS = list(dict.fromkeys([GROQ_MODEL, "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]))
 
-DEFAULT_MODEL = HF_MODEL
+DEFAULT_MODEL = GROQ_MODEL
 
 RETRIES_PER_MODEL = 2
 RETRY_BACKOFF_SECONDS = 1.5
 
 
 def _api_key() -> str:
-    api_key = os.getenv("HF_TOKEN")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "HF_TOKEN is not set. Check your .env file."
+            "GROQ_API_KEY is not set. Check your .env file."
         )
     return api_key
 
@@ -47,7 +48,7 @@ def _build_llm(model: str, temperature: float) -> ChatOpenAI:
         temperature=temperature,
         max_tokens=4096,
         api_key=_api_key(),
-        base_url="https://router.huggingface.co/v1",   # pehle openrouter.ai tha
+        base_url="https://api.groq.com/openai/v1",
     )
 
 
@@ -104,7 +105,7 @@ def invoke_structured(prompt, schema, inputs, temperature: float = 0.7, label: s
     """
     def build_chain(model, temperature):
         structured_llm = _build_llm(model, temperature).with_structured_output(
-            schema, method="json_schema"
+            schema, method="function_calling"
         )
         return prompt | structured_llm
 
@@ -194,8 +195,12 @@ async def aembed(texts: list[str]) -> list[list[float]] | None:
     """Embeddings via OpenRouter. Returns None when EMBEDDING_MODEL is unset (semantic memory disabled)."""
     if not settings.EMBEDDING_MODEL or not texts:
         return None
+    embedding_key = os.getenv("OPENROUTER_API_KEY")
+    if not embedding_key:
+        log_.warning("EMBEDDING_MODEL is set but OPENROUTER_API_KEY is not; falling back to lexical retrieval")
+        return None
     from langchain_openai import OpenAIEmbeddings
-    emb = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL, api_key=_api_key(), base_url="https://openrouter.ai/api/v1",
+    emb = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL, api_key=embedding_key, base_url="https://openrouter.ai/api/v1",
                            check_embedding_ctx_length=False)
     try:
         return await asyncio.wait_for(emb.aembed_documents(texts), timeout=settings.LLM_TIMEOUT_SECONDS)

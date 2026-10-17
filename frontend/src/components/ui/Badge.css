@@ -1,0 +1,46 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.badge-violet {
+  background: var(--accent-violet-soft);
+  color: var(--accent-violet-strong);
+}
+
+.badge-positive {
+  background: var(--sentiment-positive-bg);
+  color: var(--sentiment-positive);
+}
+
+.badge-negative {
+  background: var(--sentiment-negative-bg);
+  color: var(--sentiment-negative);
+}
+
+.badge-neutral {
+  background: var(--sentiment-neutral-bg);
+  color: var(--sentiment-neutral);
+}
+
+.badge-mixed {
+  background: var(--sentiment-mixed-bg);
+  color: var(--sentiment-mixed);
+}
+
+.badge-navy {
+  background: var(--bg-warm-sunken);
+  color: var(--text-secondary);
+}
+
+.badge-warning {
+  background: #fdf1d9;
+  color: #96701a;
+}

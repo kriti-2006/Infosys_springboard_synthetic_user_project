@@ -1,6 +1,6 @@
 # Agents
 
-| Agent | File | Responsibility | Input | Output | LLM (OpenRouter, `OPENROUTER_MODEL`) | Database |
+| Agent | File | Responsibility | Input | Output | LLM (`GROQ_MODEL`, default `openai/gpt-oss-120b`, via Groq) | Database |
 |---|---|---|---|---|---|---|
 | Persona Agent *(M2, reused)* | `agents/persona_agent.py` | Generate personas | Experiment | `Persona` | yes | `personas` (persisted by API) |
 | Survey Agent | `agents/survey_execution_agent.py` | Run a survey across personas, controlled concurrency, resume, failure tracking | Questions + persona ids | `SurveyResponse` rows | via Persona Simulation | `surveys`, `survey_responses` |

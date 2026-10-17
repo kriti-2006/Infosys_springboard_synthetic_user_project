@@ -109,3 +109,57 @@ This will:
 See `docs/milestone-3.md` (quick start + API), `docs/database.md`, `docs/agents.md`, `docs/architecture.md`,
 `docs/technology-decisions.md`, `docs/environment.md`, `docs/milestone-2-analysis.md`.
 The Milestone 2 pipeline (`python main.py`, `streamlit run streamlit_app.py`) is unchanged.
+
+# Frontend (React + TypeScript + Vite)
+
+The Milestone 3 API is fronted by a dashboard in `frontend/`: experiments, persona generation, survey creation and a
+side-by-side comparison dashboard, persistent-memory interviews, insight extraction (themes/sentiment/contradictions),
+transparent "would they use this?" adoption scoring, and a gallery of ready-made sample scenarios.
+
+## Setup
+
+```bash
+# 1. Backend (from the repo root)
+docker compose up -d                  # Postgres + pgvector on localhost:5433
+cp .env.example .env                  # add GROQ_API_KEY
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn api.app:app --reload          # http://localhost:8000 (docs at /docs)
+
+# 2. Frontend (in a second terminal)
+cd frontend
+npm install
+npm run dev                           # http://localhost:5173 - proxies /api to :8000, no CORS setup needed
+```
+
+Open http://localhost:5173, create an experiment (or launch a sample scenario from the sidebar), generate personas,
+then run a survey, start an interview, extract insights, or score adoption likelihood.
+
+## Architecture
+
+```
+React/Vite SPA (frontend/, :5173) --/api proxy--> FastAPI (api/, :8000) --> agents/ --> PostgreSQL+pgvector (:5433)
+```
+
+The frontend never calls the LLM or database directly - every request goes through the same `/api/*` endpoints
+documented in `docs/milestone-3.md`. Frontend source layout and the chart-color methodology are documented in
+`docs/architecture.md` ("Frontend" section) and `docs/technology-decisions.md`.
+
+## Testing
+
+```bash
+# Backend: unit + integration tests, LLM mocked, no API key needed
+pytest
+
+# Frontend: type-check + production build (no component test suite yet)
+cd frontend && npm run build
+```
+
+## LLM provider
+
+Uses Groq (`GROQ_API_KEY`, api.groq.com) - an OpenAI-compatible endpoint with a working free tier. If the key is
+missing/invalid or the account is rate-limited, persona generation, survey runs, interviews, insight extraction and
+adoption scoring fail with a clear error (the backend returns a typed `llm_unavailable`/`llm_timeout` error, and the
+frontend surfaces it as a toast) instead of silently returning fake data. Everything that doesn't require an LLM
+call - creating experiments, importing personas, building surveys, browsing sample scenarios, and the full
+error/empty/loading UI - works regardless. To switch provider again, edit `_api_key()`/`_build_llm()` in `llm.py` only.

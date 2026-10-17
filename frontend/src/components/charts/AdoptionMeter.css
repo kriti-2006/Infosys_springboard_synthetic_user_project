@@ -1,0 +1,41 @@
+.adoption-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adoption-meter-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg-warm-sunken);
+  overflow: hidden;
+}
+
+.adoption-meter-sm .adoption-meter-track {
+  height: 6px;
+}
+
+.adoption-meter-lg .adoption-meter-track {
+  height: 14px;
+}
+
+.adoption-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-violet-soft) 0%, var(--accent-violet) 55%, var(--accent-violet-strong) 100%);
+  transition: width 0.5s ease;
+}
+
+.adoption-meter-value {
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 28px;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.adoption-meter-lg .adoption-meter-value {
+  font-size: 20px;
+  min-width: 44px;
+}

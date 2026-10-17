@@ -3,11 +3,12 @@ import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.deps import rate_limit, require_api_key
-from api.routers import analysis, experiments, interviews, surveys
+from api.routers import analysis, experiments, interviews, scenarios, surveys
 from config import settings
 from db import session as dbs
 from llm import LLMError
@@ -44,8 +45,15 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Synthetic Persona Platform API", version="3.0.0", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS or ["http://localhost:5173"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     api = APIRouter(prefix="/api", dependencies=[Depends(require_api_key), Depends(rate_limit)])
-    for r in (experiments.router, surveys.router, interviews.router, analysis.router):
+    for r in (experiments.router, surveys.router, interviews.router, analysis.router, scenarios.router):
         api.include_router(r)
     app.include_router(api)
 

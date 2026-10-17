@@ -14,7 +14,7 @@ User -> Streamlit form (streamlit_app.py) or main.py
 |---|---|
 | Language / stack | Python, LangGraph, LangChain, Pydantic, Streamlit, reportlab |
 | Agents | Persona (1 LLM call per persona), Survey (LLM designs questions), Response (1 call per persona, all questions at once), Insight (1 free-text-heavy report) |
-| LLM | OpenRouter via `langchain_openai.ChatOpenAI`; `llm.py` adds retry + model fallback + structured output (`function_calling`) |
+| LLM | Qwen3-8B via `langchain_openai.ChatOpenAI`; `llm.py` adds retry + model fallback + structured output (`function_calling`) |
 | Persona model | `schemas.Persona` (name, age, occupation, traits, behavioral_patterns, psychological_profile, goals, pain_points, ...) |
 | "Memory" | (a) LangGraph `GraphState` + in-RAM `MemorySaver`; (b) `PersonaInterviewSession.history` list. Both are lost on restart. There was **no** persistent persona-memory/consistency module. |
 | Database | none |
